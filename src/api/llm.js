@@ -59,3 +59,42 @@ const llmApi = async (description) => {
 };
 
 export default llmApi;
+
+export const generateEmbeddings = async (property) => {
+  try {
+    // Convert property object to a string representation
+    const propertyText = `
+      Property in ${property.city} at ${property.streetAddress}.
+      ${property.bedrooms} bedrooms, ${property.bathrooms} bathrooms.
+      Price: ${property.price}.
+      Home type: ${property.homeType || "Not specified"}.
+      Nice to haves: ${property.nice_to_haves?.join(", ") || "None"}.
+    `;
+
+    // Use OpenAI to generate embeddings
+    const response = await fetch("https://api.openai.com/v1/embeddings", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        input: propertyText,
+        model: "text-embedding-3-small",
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        `OpenAI API error: ${error.error?.message || JSON.stringify(error)}`
+      );
+    }
+
+    const data = await response.json();
+    return data.data[0].embedding;
+  } catch (error) {
+    console.error("Error generating embeddings:", error);
+    throw error;
+  }
+};

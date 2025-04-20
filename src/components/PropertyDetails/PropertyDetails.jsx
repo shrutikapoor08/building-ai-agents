@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import PropertyCard from "../PropertyCard/PropertyCard";
-// import useRecommendedPropertyStore from "../../store/recommendedProperty";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import "../../App.css";
 
 function PropertyDetails({
@@ -16,30 +17,7 @@ function PropertyDetails({
   },
 }) {
   const [propertyDetails, setPropertyDetails] = useState({});
-
-  // const setLikedProperty = useRecommendedPropertyStore(
-  //   (state) => state.setLikedProperty
-  // );
-  // const setDislikedProperty = useRecommendedPropertyStore(
-  //   (state) => state.setDislikedProperty
-  // );
-
-  const saveProperty = async (property) => {
-    // Send data to parse properties
-    const url = "/api/save-property";
-
-    const responseData = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(property),
-    });
-
-    if (!responseData.ok) {
-      const errorMessage = await responseData.text();
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-  };
+  const insertProperty = useMutation(api.property.insert);
 
   const handleLike = async () => {
     const property = {
@@ -47,15 +25,39 @@ function PropertyDetails({
       bathrooms,
       city,
       streetAddress,
-      price,
+      price: price.toString(), // Ensure price is a string
       imgSrc,
       homeType,
-      zpid,
+      zpid: zpid.toString(), // Ensure zpid is a string
       preference: true,
-      nice_to_haves: propertyDetails?.nice_to_haves,
+      nice_to_haves: propertyDetails?.nice_to_haves || [],
     };
-    saveProperty(property);
-    // setLikedProperty(property); //update store
+
+    try {
+      // Generate embeddings and save to Convex
+      const response = await fetch("/api/generate-embeddings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(property),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate embeddings");
+      }
+
+      const { embedding } = await response.json();
+
+      // Save to Convex with embedding
+      await insertProperty({
+        ...property,
+        embedding,
+      });
+
+      // Optional: Show success notification
+      console.log("Property saved successfully");
+    } catch (error) {
+      console.error("Error saving property:", error);
+    }
   };
 
   const handleDislike = async () => {
@@ -64,15 +66,36 @@ function PropertyDetails({
       bathrooms,
       city,
       streetAddress,
-      price,
+      price: price.toString(), // Ensure price is a string
       imgSrc,
       homeType,
-      zpid,
+      zpid: zpid.toString(), // Ensure zpid is a string
       preference: false,
-      nice_to_haves: propertyDetails?.nice_to_haves,
+      nice_to_haves: propertyDetails?.nice_to_haves || [],
     };
-    saveProperty(property);
-    // setDislikedProperty(property); //update store
+
+    try {
+      const response = await fetch("/api/generate-embeddings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(property),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate embeddings");
+      }
+
+      const { embedding } = await response.json();
+
+      await insertProperty({
+        ...property,
+        embedding,
+      });
+
+      console.log("Property saved successfully");
+    } catch (error) {
+      console.error("Error saving property:", error);
+    }
   };
 
   return (
@@ -90,6 +113,8 @@ function PropertyDetails({
         streetAddress={streetAddress}
         city={city}
         homeType={homeType}
+        onLike={handleLike}
+        onDislike={handleDislike}
       />
     </div>
   );

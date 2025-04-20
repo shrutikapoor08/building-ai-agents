@@ -40,31 +40,25 @@ export default function Recommendations() {
   async function fetchRecommendations(property) {
     if (!property?.zpid) return;
 
-    const {
-      zpid,
-      bedrooms,
-      bathrooms,
-      city,
-      streetAddress,
-      price,
-      imgSrc,
-      propertyDetails,
-    } = property;
+    try {
+      const propertiesResult = await generateRecommendations({
+        property: {
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          city: property.city,
+          streetAddress: property.streetAddress,
+          price: parseFloat(property.price.replace(/[^0-9.]/g, "")),
+          imgSrc: property.imgSrc,
+          zpid: parseFloat(property.zpid),
+          homeType: property.homeType || property.propertyDetails?.homeType,
+          preference: property.preference,
+        },
+      });
 
-    const propertiesResult = await generateRecommendations({
-      property: {
-        bedrooms,
-        bathrooms,
-        city,
-        streetAddress,
-        price,
-        imgSrc,
-        zpid,
-        homeType: propertyDetails?.homeType,
-      },
-    });
-
-    setRecommendedProperties(propertiesResult);
+      setRecommendedProperties(propertiesResult);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    }
   }
 
   return (

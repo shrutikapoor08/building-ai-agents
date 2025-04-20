@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { URLSearchParams } from "url";
 import * as dotenv from "dotenv";
-import llmApi from "./llm.js";
+import llmApi, { generateEmbeddings } from "./llm.js";
 
 // Configuration
 dotenv.config({ path: ".env.local" });
@@ -103,11 +103,21 @@ app.get("/api/property-details", async (req, res) => {
   }
 });
 
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "index.html"));
+app.post("/api/generate-embeddings", async (req, res) => {
+  try {
+    const property = req.body;
+    const embedding = await generateEmbeddings(property);
+    res.json({ embedding });
+  } catch (error) {
+    console.error("Error generating embeddings:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Start server
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

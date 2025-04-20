@@ -22,20 +22,20 @@ export const similarProperties = action({
     }),
   },
   handler: async (ctx, args) => {
-    const embeddings = await generateEmbeddings(args.property);
-    const results = await ctx.vectorSearch("property", "by_embedding", {
-      vector: embeddings,
-      limit: 4,
-      filterFields: [
-        "preference",
-        "price",
-        "bedrooms",
-        "bathrooms",
-        "streetAddress",
-        "city",
-        "nice_to_haves",
-      ],
-    });
-    return results;
+    try {
+      const embeddings = await generateEmbeddings(args.property);
+
+      // Perform vector search
+      const results = await ctx.vectorSearch("property", "by_embedding", {
+        vector: embeddings,
+        limit: 4,
+        filter: (q) => q.neq("zpid", args.property.zpid.toString()), // Exclude the current property
+      });
+
+      return results;
+    } catch (error) {
+      console.error("Error in similarProperties:", error);
+      throw error;
+    }
   },
 });
