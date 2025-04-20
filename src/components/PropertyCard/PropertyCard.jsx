@@ -4,7 +4,6 @@ import NiceToHaveFeatures from "../NiceToHaveFeatures/NiceToHaveFeatures";
 import { Heart, MapPin, Bed, Bath, Square, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import PropertyActions from "../PropertyActions/PropertyActions";
-import useAgentStore from "../../store/agentStore";
 
 function PropertyCard(property) {
   const {
@@ -18,15 +17,6 @@ function PropertyCard(property) {
     propertyDetails,
     homeType,
   } = property;
-  const setProperty = useAgentStore((state) => state.setProperty);
-  const realEstateAgentRef = useAgentStore((state) => state.realEstateAgentRef);
-
-  useEffect(() => {
-    if (realEstateAgentRef?.current) {
-      realEstateAgentRef?.current?.scrollIntoView({ behavior: "smooth" });
-    }
-    realEstateAgentRef?.current?.focus();
-  }, [property]);
 
   return (
     <>
