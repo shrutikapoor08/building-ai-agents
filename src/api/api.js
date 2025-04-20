@@ -103,16 +103,7 @@ app.get("/api/property-details", async (req, res) => {
   }
 });
 
-app.post("/api/generate-embeddings", async (req, res) => {
-  try {
-    const property = req.body;
-    const embedding = await generateEmbeddings(property);
-    res.json({ embedding });
-  } catch (error) {
-    console.error("Error generating embeddings:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
+app.post("/api/generate-embeddings", async (req, res) => {});
 
 // Start server
 app.get("/", (req, res) => {

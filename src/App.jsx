@@ -6,8 +6,6 @@ import Header from "./components/Header/Header.jsx";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import PropertiesListings from "./components/PropertiesListings/PropertiesListings.jsx";
 
-const PREFERENCE = { LIKED: true, DISLIKED: false, NO_PREFERENCE: undefined };
-
 const Loader = () => (
   <div className="flex justify-center items-center m-10">
     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -22,6 +20,7 @@ const Error = ({ error }) => (
 function App() {
   const ref = useRef("");
   const [searchInput, setSearchInput] = useState("");
+
   const allDataRef = useRef(null);
 
   const {
@@ -36,7 +35,6 @@ function App() {
   } = useInfiniteQuery({
     queryKey: [searchInput],
     queryFn: getPropertiesFromNaturalLanguage,
-    initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       // Calculate the total number of items displayed so far
       const totalDisplayed = pages.flat().length;
@@ -70,8 +68,6 @@ function App() {
     });
 
     allDataRef.current = await responseData.json();
-
-    console.log(allDataRef.current);
 
     if (pageParam === 0) {
       if (!allDataRef.current) return null;

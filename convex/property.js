@@ -16,25 +16,15 @@ export const insert = mutation({
     embedding: v.array(v.float64()),
   },
   handler: async (ctx, args) => {
-    const propertyId = await ctx.db.insert("property", {
-      ...args,
-      nice_to_haves: args.nice_to_haves || [],
-      embedding: args.embedding || [],
-    });
-    return propertyId;
+    // Add logic to insert a property into Convex
+    const property = await ctx.db.insert("property", args);
+    return property.id;
   },
 });
 
 export const getByIds = query({
   args: { ids: v.array(v.id("property")) },
   handler: async (ctx, args) => {
-    const { ids } = args;
-    if (!ids.length) return [];
-
-    // Fetch all properties with IDs in the provided array
-    const properties = await Promise.all(ids.map((id) => ctx.db.get(id)));
-
-    // Filter out any null results (in case an ID doesn't exist)
-    return properties.filter(Boolean);
+    // Add logic to fetch properties by IDs
   },
 });

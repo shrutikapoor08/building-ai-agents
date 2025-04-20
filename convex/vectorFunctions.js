@@ -22,20 +22,6 @@ export const similarProperties = action({
     }),
   },
   handler: async (ctx, args) => {
-    try {
-      const embeddings = await generateEmbeddings(args.property);
-
-      // Perform vector search
-      const results = await ctx.vectorSearch("property", "by_embedding", {
-        vector: embeddings,
-        limit: 4,
-        filter: (q) => q.neq("zpid", args.property.zpid.toString()), // Exclude the current property
-      });
-
-      return results;
-    } catch (error) {
-      console.error("Error in similarProperties:", error);
-      throw error;
-    }
+    //Add logic to perform a similarity search using vector embedding
   },
 });
