@@ -1,10 +1,8 @@
 import express from "express";
 import path from "path";
 import { URLSearchParams } from "url";
-import { ConvexHttpClient } from "convex/browser";
 import * as dotenv from "dotenv";
-import llmApi, { generateEmbeddings } from "./llm.js";
-import realEstateAgent from "./agent.ts";
+import llmApi from "./llm.js";
 
 // Configuration
 dotenv.config({ path: ".env.local" });
@@ -16,7 +14,6 @@ const ZILLOW_API = {
 
 const app = express();
 const port = process.env.PORT || 3001;
-const convex = new ConvexHttpClient(process.env["VITE_CONVEX_URL"]);
 const __dirname = path.resolve(path.dirname(""));
 
 // Middleware
@@ -55,44 +52,6 @@ async function fetchProperties({ propertiesRequirements }) {
   }
 }
 
-async function savePropertyToDB(property) {
-  const {
-    bedrooms,
-    bathrooms,
-    city,
-    streetAddress,
-    price,
-    imgSrc,
-    homeType,
-    zpid,
-    preference,
-    nice_to_haves,
-  } = property;
-
-  try {
-    const embeddings = await generateEmbeddings(property);
-    const formattedProperty = {
-      zpid: String(zpid),
-      bedrooms: Number(bedrooms),
-      bathrooms: Number(bathrooms),
-      city: String(city),
-      streetAddress: String(streetAddress),
-      price: String(price),
-      imgSrc: String(imgSrc),
-      homeType: String(homeType),
-      preference: Boolean(preference),
-      nice_to_haves: nice_to_haves || [],
-      embedding: embeddings,
-    };
-
-    //TODO: bug fix - dont insert if property already exist. upsert.
-    return await convex.mutation("property:insert", formattedProperty);
-  } catch (error) {
-    console.error(error);
-    throw new Error(error.message);
-  }
-}
-
 // Routes
 app.post("/api/parse-properties", async (req, res) => {
   try {
@@ -123,16 +82,6 @@ app.post("/api/parse-properties", async (req, res) => {
   }
 });
 
-app.post("/api/save-property", async (req, res) => {
-  try {
-    const property = req.body;
-    const propertiesResponse = await savePropertyToDB(property);
-    res.send(propertiesResponse);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 app.get("/api/property-details", async (req, res) => {
   try {
     const { zpid } = req.query;
@@ -149,16 +98,6 @@ app.get("/api/property-details", async (req, res) => {
 
     const propertyDetail = await response.json();
     res.send(propertyDetail);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.post("/api/real-estate-agent", async (req, res) => {
-  try {
-    const { userQuestion, property } = req.body;
-    const response = await realEstateAgent({ userQuestion, property });
-    res.send(response);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

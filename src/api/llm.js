@@ -1,19 +1,9 @@
 import { PromptTemplate } from "@langchain/core/prompts";
-import { JSONLoader } from "langchain/document_loaders/fs/json";
 import { OpenAI } from "@langchain/openai";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
-import { OpenAIEmbeddings } from "@langchain/openai";
 import { z } from "zod";
 import "dotenv/config";
-
-export async function generateEmbeddings(property) {
-  const stringifiedProperty = JSON.stringify(property);
-  const embeddings_model = new OpenAIEmbeddings({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  return embeddings_model.embedQuery(stringifiedProperty);
-}
 
 const llmApi = async (description) => {
   const llm = new OpenAI({
@@ -22,33 +12,25 @@ const llmApi = async (description) => {
 
   const parser = StructuredOutputParser.fromZodSchema(
     z.object({
-      price_ending: z
+      location: z
         .string()
         .describe(
-          "Ending price of budget. Return 10000000 for properties that are for sale. If the user is looking for a property for rent, then return 10000. If nothing is passed, return 10000000."
+          "The location where the user is looking for a property. If nothing is passed, return Seattle, WA"
+        ),
+      bedrooms: z
+        .number()
+        .describe(
+          "The number of bedrooms the user is looking for. If nothing is passed, return 3"
         ),
       price_starting: z
         .string()
         .describe(
-          "Starting price of budget.  Return 1000000 for properties that are for sale. If the user is looking for a property for rent, then return 1500. If nothing is passed, return 1000000."
+          "The starting price range the user is looking for. If nothing is passed, return 500000"
         ),
-      bedrooms: z
-        .number()
-        .describe("Number of bedrooms. Return 1 if not passed"),
-      bathrooms: z
-        .number()
-        .describe("Number of bathrooms. Return 1 if not passed"),
-      nice_to_haves: z
+      price_ending: z
         .string()
-        .array()
         .describe(
-          "Additional preferences of the user, such as frontyard, backyard, nice neighborhood, proximity to schools, etc. Return as an array of string. If nothing is passed, return empty array."
-        ),
-      location: z
-        .string()
-        .optional()
-        .describe(
-          "Location preferences of the user. Return as a string. If nothing is passed, return Seattle, WA."
+          "The ending price range the user is looking for. If nothing is passed, return 1000000"
         ),
       listingStatus: z
         .enum(["For_Sale", "For_Rent", "For_Sale_Or_Rent"])

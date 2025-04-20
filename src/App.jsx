@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import "./App.css";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import PropertyCard from "./components/PropertyCard/PropertyCard.jsx";
-import FeaturedSection from "./components/FeaturedSection/FeaturedSection.jsx";
 import Header from "./components/Header/Header.jsx";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import PropertiesListings from "./components/PropertiesListings/PropertiesListings.jsx";
-import Recommendations from "./components/Recommendations/Recommendations.jsx";
-import RealEstateAgent from "./components/RealEstateAgent/RealEstateAgent.jsx";
 
 const PREFERENCE = { LIKED: true, DISLIKED: false, NO_PREFERENCE: undefined };
 
@@ -137,16 +133,6 @@ function App() {
         </section>
       )}
 
-      {getProperties()?.length > 0 && (
-        <section className="container mx-auto">
-          <RealEstateAgent />
-        </section>
-      )}
-      {getProperties()?.length > 0 && (
-        <section className="container mx-auto">
-          <Recommendations />
-        </section>
-      )}
       {hasNextPage && getProperties()?.length > 0 && (
         <div className="flex justify-center py-4">
           <button
