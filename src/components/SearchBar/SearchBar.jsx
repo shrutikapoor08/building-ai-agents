@@ -5,8 +5,8 @@ import { Search, Sparkles } from "lucide-react";
 
 const SearchBar = ({ value, onChange, onSearch, onFillDescription }) => {
   return (
-    <form onSubmit={onSearch} className="w-full max-w-4xl mx-auto">
-      <div className="relative mx-auto mt-8">
+    <form onSubmit={onSearch} className="w-full max-w-3xl mx-auto">
+      <div className="relative mt-8 mx-2">
         <div className="relative">
           <input
             type="text"
