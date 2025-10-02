@@ -13,22 +13,25 @@ import { kMaxLength } from "buffer";
 // AGENT
 /*
 Model - OpenAI GPT 4o
-Memory - Short Term, Long Term. 
+Memory - Short Term
 Tools - Tavily Search (web search - figuring out proximity), Parser Tool (DIY)
 */
 
 const realEstateAgent = async ({ userQuestion, property }) => {
+
+  //Initialzie the agent with the model, tools, and memory
+  const agentModel = new ChatOpenAI({ temperature: 0, apiKey: process.env.OPENAI_API_KEY, maxRetries: 2 });
+  const agentCheckpointer = new MemorySaver(); // Initialize memory to persist state between graph runs
   const webTool = new TavilySearchResults({ maxResults: 3 })
 
-const agentModel = new ChatOpenAI({ temperature: 0, apiKey: process.env.OPENAI_API_KEY, maxRetries: 2 });
-const agentCheckpointer = new MemorySaver(); // Initialize memory to persist state between graph runs
-
+  // Create the agent with the model, tools, and memory
 const agent = createReactAgent({
   llm: agentModel,
   tools: [webTool],
   checkpointSaver: agentCheckpointer,
 });
 
+// Add the parser tool to the agent
 const question = new HumanMessage(userQuestion + " " + JSON.stringify(property) );
 
 const agentNextState = await agent.invoke(

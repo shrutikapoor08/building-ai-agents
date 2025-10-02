@@ -54,9 +54,11 @@ function App() {
   });
 
   const getProperties = () => {
-    if (properties?.pages?.flat().length === 0) return null;
+    console.log("getProperties called", properties);
+    if (properties?.pages?.flat()?.length === 0) return null;
     const filteredData =
-      properties?.pages?.flat().filter((item) => !!item && item.property) || [];
+      properties?.pages?.flat()?.filter((item) => !!item && item.property) ||
+      [];
 
     if (!filteredData.length) return null;
 
