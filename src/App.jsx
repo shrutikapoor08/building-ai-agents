@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import "./App.css";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import PropertyCard from "./components/PropertyCard/PropertyCard.jsx";
-import FeaturedSection from "./components/FeaturedSection/FeaturedSection.jsx";
 import Header from "./components/Header/Header.jsx";
 import SearchBar from "./components/SearchBar/SearchBar.jsx";
 import PropertiesListings from "./components/PropertiesListings/PropertiesListings.jsx";
-import Recommendations from "./components/Recommendations/Recommendations.jsx";
-import RealEstateAgent from "./components/RealEstateAgent/RealEstateAgent.jsx";
 
 const PREFERENCE = { LIKED: true, DISLIKED: false, NO_PREFERENCE: undefined };
 
@@ -23,10 +19,86 @@ const Error = ({ error }) => (
   </div>
 );
 
+// Mock data for Step 1
+const MOCK_PROPERTIES = [
+  {
+    property: {
+      zpid: "1",
+      address: {
+        streetAddress: "123 Main St",
+        city: "Seattle",
+        state: "WA",
+        zipcode: "98101",
+      },
+      price: 750000,
+      bedrooms: 3,
+      bathrooms: 2,
+      livingArea: 1800,
+      description: "Beautiful 3 bedroom home in Seattle",
+      imgSrc:
+        "https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+  },
+  {
+    property: {
+      zpid: "2",
+      address: {
+        streetAddress: "456 Pine St",
+        city: "Seattle",
+        state: "WA",
+        zipcode: "98102",
+      },
+      price: 850000,
+      bedrooms: 4,
+      bathrooms: 3,
+      livingArea: 2200,
+      description: "Spacious 4 bedroom home with great views",
+      imgSrc:
+        "https://images.unsplash.com/photo-1564013799919-ab600027ffc6?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+  },
+  {
+    property: {
+      zpid: "3",
+      address: {
+        streetAddress: "789 Lake Ave",
+        city: "Seattle",
+        state: "WA",
+        zipcode: "98103",
+      },
+      price: 650000,
+      bedrooms: 3,
+      bathrooms: 2,
+      livingArea: 1600,
+      description: "Cozy 3 bedroom near the lake",
+      imgSrc:
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2075&q=80",
+    },
+  },
+  {
+    property: {
+      zpid: "4",
+      address: {
+        streetAddress: "101 Queen Anne Rd",
+        city: "Seattle",
+        state: "WA",
+        zipcode: "98109",
+      },
+      price: 950000,
+      bedrooms: 5,
+      bathrooms: 3.5,
+      livingArea: 2800,
+      description: "Luxury 5 bedroom in Queen Anne",
+      imgSrc:
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
+    },
+  },
+];
+
 function App() {
   const ref = useRef("");
   const [searchInput, setSearchInput] = useState("");
-  const allDataRef = useRef(null);
+  const allDataRef = useRef(MOCK_PROPERTIES);
 
   const {
     isLoading,
@@ -39,11 +111,12 @@ function App() {
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: [searchInput],
-    queryFn: getPropertiesFromNaturalLanguage,
+    queryFn: getPropertiesFromMockData,
     initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       // Calculate the total number of items displayed so far
       const totalDisplayed = pages.flat().length;
+
       // If all items have been displayed, stop pagination
       if (allDataRef.current && totalDisplayed >= allDataRef.current.length) {
         return undefined; // No more pages
@@ -64,28 +137,19 @@ function App() {
 
     return filteredData;
   };
-  async function getPropertiesFromNaturalLanguage({ pageParam = 0 }) {
-    if (!ref.current) return;
 
-    const url = "/api/parse-properties";
-    const formData = { post: searchInput };
-    const responseData = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    });
+  // Replaced API call with mock data function
+  async function getPropertiesFromMockData({ pageParam = 0 }) {
+    if (!ref.current) return [];
 
-    allDataRef.current = await responseData.json();
-
-    console.log(allDataRef.current);
+    // Simulate API delay
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     if (pageParam === 0) {
-      if (!allDataRef.current) return null;
-      return allDataRef.current.slice(0, 4);
+      return allDataRef.current.slice(0, 2);
     } else {
-      const start = pageParam * 4;
-      const end = start + 4;
-
+      const start = pageParam * 2;
+      const end = start + 2;
       return allDataRef.current.slice(start, end);
     }
   }
@@ -139,16 +203,6 @@ function App() {
         </section>
       )}
 
-      {getProperties()?.length > 0 && (
-        <section className="container mx-auto">
-          <RealEstateAgent />
-        </section>
-      )}
-      {getProperties()?.length > 0 && (
-        <section className="container mx-auto">
-          <Recommendations />
-        </section>
-      )}
       {hasNextPage && getProperties()?.length > 0 && (
         <div className="flex justify-center py-4">
           <button
